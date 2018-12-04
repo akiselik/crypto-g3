@@ -16,6 +16,6 @@ Files:
 - rsa.py -- rsa implementation
 - sha1_hex.py -- sha1 implementation
 - verify.py -- hmac implementation
-- des_160b.py -- 3DES implementation
+- des3.py -- 3DES implementation
 - server.py -- server
 - client.py -- client
