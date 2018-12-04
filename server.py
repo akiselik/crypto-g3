@@ -1,17 +1,8 @@
-#connect to server
-#receive client hello, random var, supported cipher suites
-#send server hello, chosen protocol, random var, certificate aka public key, server hello done
-#receive prime p, generator g encrypted with the servers public key
-#computational diffie hellman
-#receive change cipher spec w/ verify.hmac
-#send change cipher spec & server finished using newly agreed upon key & verify.hmac
-
 import socket, time, secrets, sys, random
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind(('localhost', 9898))
 serversocket.listen(1)
-sys.path.append("../")
-import rsa, des_160b as des, bg, verify
+import rsa, des3 as des, bg, verify
 
 
 def genP(length):
@@ -51,7 +42,7 @@ def encrypt(algo, message, p, q):
     if(algo == 0):
         return(bg.encrypt(fullmsg, n))
     if(algo == 1):
-        return(des.encrypt(key, fullmsg))
+        return(des.encrypt3(key, fullmsg))
 
 def decrypt(algo, message, p, q):
     n = p*q
@@ -59,15 +50,15 @@ def decrypt(algo, message, p, q):
     if(algo == 0):
         msg = bg.decrypt(message, p, q)
     if(algo == 1):
-        msg = des.decrypt(key, fullmsg)
+        msg = des.decrypt3(key, message)
     retmsg = msg[:-40]
     hm = msg[-40:]
     return retmsg, hm
 
-p = gp(20)
-q = gp(20)
+p = gp(40)
+q = gp(40)
 while(q == p):
-    q = gp(20)
+    q = gp(40)
 
 public, private = rsa.keyGen(p, q)
 
@@ -81,7 +72,6 @@ while True:
     hello = hello.split('%')
     algo = hello[2].split(";")
     chosen = secrets.randbelow(len(algo))
-    #chosen = 0 #THIS WILL PREVENT THE ALGORITHM FROM BEING RANDOMLY CHOSEN 0 = BG 1 = DES
     cert = public
     msg = "server hello%" + str(chosen) +"%"+ str(secrets.randbelow(2048)) +"%"+ str(cert)+"%server hello done"
     connection.sendall(msg.encode('utf-8'))

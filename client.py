@@ -1,16 +1,6 @@
-#connect to server
-#client hello, random var, supported cipher suites
-#receive server hello, chosen protocol, random var, certificate aka public key, server hello done
-#prime p, generator g encrypted with the servers public key
-#computational diffie hellman
-#change cipher spec w/ verify.hmac
-#Receive change cipher spec & server finished using newly agreed upon key & verify.hmac
-
-
 import  socket, secrets, sys
 from random import randrange, getrandbits
-sys.path.append("../")
-import rsa, verify, bg, des_160b as des
+import rsa, verify, bg, des3 as des
 
 def genP(length):
     """ Generate an odd integer randomly
@@ -49,7 +39,7 @@ def encrypt(algo, message, p, q):
     if(algo == 0):
         return(bg.encrypt(fullmsg, n))
     if(algo == 1):
-        return(des.encrypt(key, fullmsg))
+        return(des.encrypt3(key, fullmsg))
 
 def decrypt(algo, message, p, q):
     n = p*q
@@ -57,7 +47,7 @@ def decrypt(algo, message, p, q):
     if(algo == 0):
         msg = bg.decrypt(message, p, q)
     if(algo == 1):
-        msg = des.decrypt(key, fullmsg)
+        msg = des.decrypt3(key, message)
     retmsg = msg[:-40]
     hm = msg[-40:]
     return retmsg, hm
@@ -74,8 +64,8 @@ servHello = servHello.decode('utf-8')
 sh = servHello.split("%")
 protocol = int(sh[1])
 cert = sh[3]
-p = gp(57)
-q = gp(55)
+p = gp(55)
+q = gp(53)
 msg = str(p)+"%"+str(q)
 cert = cert.replace('(','')
 cert = cert.replace(')','')
